@@ -6,7 +6,7 @@ A simple Python HTTP server running in a Docker container. It responds to GET re
 - **Second line:** `Path: ...` (the path requested)
 - **Third line:** `Identifier: ...` (the value of the `IDENTIFIER` environment variable, if set)
 
-The app listens on **port 8000**.
+The app listens on **port 8080**.
 
 ## 🐳 Docker Image
 
@@ -18,16 +18,16 @@ docker pull riccardotornesello/hello-world-http-server
 
 ## 🚀 Running the Server
 
-Run the container exposing port `8000`:
+Run the container exposing port `8080`:
 
 ```bash
-docker run -p 8000:8000 riccardotornesello/hello-world-http-server
+docker run -p 8080:8080 riccardotornesello/hello-world-http-server
 ```
 
 If you want to set a custom identifier:
 
 ```bash
-docker run -p 8000:8000 -e IDENTIFIER="MyServer123" riccardotornesello/hello-world-http-server
+docker run -p 8080:8080 -e IDENTIFIER="MyServer123" riccardotornesello/hello-world-http-server
 ```
 
 ## 🌐 Example Response
@@ -35,7 +35,7 @@ docker run -p 8000:8000 -e IDENTIFIER="MyServer123" riccardotornesello/hello-wor
 Request:
 
 ```bash
-curl http://localhost:8000/test
+curl http://localhost:8080/test
 ```
 
 Response:
