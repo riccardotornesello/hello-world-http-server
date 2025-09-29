@@ -9,15 +9,15 @@ app = Flask(__name__)
 def catch_all(path):
     identifier = os.environ.get("IDENTIFIER")
 
-    lines = ["Hello World!"]
+    output = "Hello World!\n"
 
     requested_path = f"/{path}" if path else "/"
-    lines.append(f"Path: {requested_path}")
+    output += f"Path: {requested_path}\n"
 
     if identifier:
-        lines.append(f"Identifier: {identifier}")
+        output += f"Identifier: {identifier}\n"
 
-    return "\n".join(lines), 200, {"Content-Type": "text/plain; charset=utf-8"}
+    return output, 200, {"Content-Type": "text/plain; charset=utf-8"}
 
 
 if __name__ == "__main__":
