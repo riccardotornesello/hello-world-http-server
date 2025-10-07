@@ -1,5 +1,6 @@
-from flask import Flask, request
 import os
+import socket
+from flask import Flask
 
 app = Flask(__name__)
 
@@ -13,6 +14,9 @@ def catch_all(path):
 
     requested_path = f"/{path}" if path else "/"
     output += f"Path: {requested_path}\n"
+
+    hostname = socket.gethostname()
+    output += f"Hostname: {hostname}\n"
 
     if identifier:
         output += f"Identifier: {identifier}\n"

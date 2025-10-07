@@ -4,7 +4,8 @@ A simple Python HTTP server running in a Docker container. It responds to GET re
 
 - **First line:** `Hello World!`
 - **Second line:** `Path: ...` (the path requested)
-- **Third line:** `Identifier: ...` (the value of the `IDENTIFIER` environment variable, if set)
+- **Third line**: `Hostname: ...`
+- **Fourth line:** `Identifier: ...` (the value of the `IDENTIFIER` environment variable, if set)
 
 The app listens on **port 8080**.
 
