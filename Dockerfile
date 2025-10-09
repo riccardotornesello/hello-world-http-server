@@ -10,6 +10,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY server.py ./
 
 # Run the application
-EXPOSE 8080
+ENV PORT=80
+
+EXPOSE $PORT
+
 ENV PYTHONUNBUFFERED=1
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "server:app"]
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT server:app"]

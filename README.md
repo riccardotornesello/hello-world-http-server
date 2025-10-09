@@ -7,7 +7,7 @@ A simple Python HTTP server running in a Docker container. It responds to GET re
 - **Third line**: `Hostname: ...`
 - **Fourth line:** `Identifier: ...` (the value of the `IDENTIFIER` environment variable, if set)
 
-The app listens on **port 8080**.
+The app listens on **port 80** by default (configurable via `PORT` environment variable).
 
 ## 🐳 Docker Image
 
@@ -19,16 +19,22 @@ docker pull riccardotornesello/hello-world-http-server
 
 ## 🚀 Running the Server
 
-Run the container exposing port `8080`:
+Run the container exposing port `80`:
 
 ```bash
-docker run -p 8080:8080 riccardotornesello/hello-world-http-server
+docker run -p 80:80 riccardotornesello/hello-world-http-server
+```
+
+Run on a custom port (e.g., port 3000):
+
+```bash
+docker run -p 3000:3000 -e PORT=3000 riccardotornesello/hello-world-http-server
 ```
 
 If you want to set a custom identifier:
 
 ```bash
-docker run -p 8080:8080 -e IDENTIFIER="MyServer123" riccardotornesello/hello-world-http-server
+docker run -p 80:80 -e IDENTIFIER="MyServer123" riccardotornesello/hello-world-http-server
 ```
 
 ## 🌐 Example Response
@@ -36,7 +42,7 @@ docker run -p 8080:8080 -e IDENTIFIER="MyServer123" riccardotornesello/hello-wor
 Request:
 
 ```bash
-curl http://localhost:8080/test
+curl http://localhost/test
 ```
 
 Response:
@@ -53,6 +59,7 @@ _(If `IDENTIFIER` is not set, the third line is omitted.)_
 
 | Variable   | Description                               | Default |
 | ---------- | ----------------------------------------- | ------- |
+| PORT       | Port number for the HTTP server           | 80      |
 | IDENTIFIER | Optional identifier to include in output. | (none)  |
 
 ## 📜 License
