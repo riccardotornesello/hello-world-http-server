@@ -59,6 +59,7 @@ jobs:
             riccardotornesello/hello-world-http-server
             ghcr.io/${{ github.repository }}
           flavor: |
+            latest=false
             suffix=-tester
 
       - name: Build and push Docker images
