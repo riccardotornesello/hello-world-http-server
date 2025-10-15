@@ -51,6 +51,16 @@ jobs:
             riccardotornesello/hello-world-http-server
             ghcr.io/${{ github.repository }}
 
+      - name: Extract metadata for tester image
+        id: meta-tester
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            riccardotornesello/hello-world-http-server
+            ghcr.io/${{ github.repository }}
+          flavor: |
+            suffix=-tester
+
       - name: Build and push Docker images
         id: push
         uses: docker/build-push-action@v6
@@ -63,6 +73,21 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
 
+      - name: Build and push tester Docker images
+        id: push-tester
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile.tester
+          build-args:
+            VERSION: ${{ github.event.release.tag_name }}
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta-tester.outputs.tags }}
+          labels: ${{ steps.meta-tester.outputs.labels }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+
       - name: Generate DockerHub artifact attestation
         uses: actions/attest-build-provenance@v3
         with:
@@ -70,9 +95,23 @@ jobs:
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
 
+      - name: Generate DockerHub tester artifact attestation
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-name: index.docker.io/riccardotornesello/hello-world-http-server
+          subject-digest: ${{ steps.push-tester.outputs.digest }}
+          push-to-registry: true
+
       - name: Generate GitHub artifact attestation
         uses: actions/attest-build-provenance@v3
         with:
           subject-name: ghcr.io/${{ github.repository }}
           subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+
+      - name: Generate GitHub tester artifact attestation
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-name: ghcr.io/${{ github.repository }}
+          subject-digest: ${{ steps.push-tester.outputs.digest }}
           push-to-registry: true

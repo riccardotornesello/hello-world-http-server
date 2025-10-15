@@ -1,0 +1,10 @@
+ARG VERSION
+
+FROM riccardotornesello/hello-world-http-server:$VERSION
+
+# Install system packages for networking tools
+RUN apt-get update && apt-get install -y \
+    curl \
+    iputils-ping \
+    traceroute \
+    && rm -rf /var/lib/apt/lists/*
