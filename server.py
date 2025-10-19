@@ -1,12 +1,14 @@
 import os
 import socket
 import time
+import threading
 from datetime import datetime, timezone
 from flask import Flask, request
 
 app = Flask(__name__)
 
-# Request counter
+# Thread-safe request counter
+request_counter_lock = threading.Lock()
 request_counter = 0
 
 
@@ -20,10 +22,19 @@ def health_check():
 @app.route("/<path:path>", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"])
 def catch_all(path):
     global request_counter
-    request_counter += 1
+    
+    # Thread-safe increment of request counter
+    with request_counter_lock:
+        request_counter += 1
+        current_count = request_counter
     
     identifier = os.environ.get("IDENTIFIER")
-    delay = int(os.environ.get("DELAY", 0))
+    
+    # Parse delay with error handling
+    try:
+        delay = int(os.environ.get("DELAY", 0))
+    except ValueError:
+        delay = 0
     
     # Simulate delay if configured
     if delay > 0:
@@ -63,7 +74,7 @@ def catch_all(path):
         output += f"Identifier: {identifier}\n"
     
     # Request counter
-    output += f"Request Count: {request_counter}\n"
+    output += f"Request Count: {current_count}\n"
 
     return output, 200, {"Content-Type": "text/plain; charset=utf-8"}
 

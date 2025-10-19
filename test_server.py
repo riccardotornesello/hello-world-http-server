@@ -101,3 +101,12 @@ def test_no_query_parameters(client):
     assert response.status_code == 200
     # Query line should not appear when there are no query parameters
     assert b'Query:' not in response.data or b'Query: \n' not in response.data
+
+
+def test_invalid_delay_env_var(client, monkeypatch):
+    """Test that invalid DELAY values are handled gracefully"""
+    monkeypatch.setenv('DELAY', 'invalid')
+    response = client.get('/')
+    # Should still work, just ignore the invalid delay
+    assert response.status_code == 200
+    assert b'Hello World!' in response.data
