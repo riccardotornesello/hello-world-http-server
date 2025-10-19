@@ -76,6 +76,9 @@ def catch_all(path):
     # Request counter
     output += f"Request Count: {current_count}\n"
 
+    # Note: We return Content-Type as text/plain, which prevents XSS attacks
+    # as browsers will not interpret the content as HTML. User-provided values
+    # (path, query params) are safely displayed as plain text.
     return output, 200, {"Content-Type": "text/plain; charset=utf-8"}
 
 
