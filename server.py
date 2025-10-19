@@ -1,25 +1,69 @@
 import os
 import socket
-from flask import Flask
+import time
+from datetime import datetime, timezone
+from flask import Flask, request
 
 app = Flask(__name__)
 
+# Request counter
+request_counter = 0
 
-@app.route("/", defaults={"path": ""})
-@app.route("/<path:path>")
+
+@app.route("/health")
+def health_check():
+    """Health check endpoint for monitoring"""
+    return "OK\n", 200, {"Content-Type": "text/plain; charset=utf-8"}
+
+
+@app.route("/", defaults={"path": ""}, methods=["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"])
+@app.route("/<path:path>", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"])
 def catch_all(path):
+    global request_counter
+    request_counter += 1
+    
     identifier = os.environ.get("IDENTIFIER")
+    delay = int(os.environ.get("DELAY", 0))
+    
+    # Simulate delay if configured
+    if delay > 0:
+        time.sleep(delay)
 
     output = "Hello World!\n"
 
+    # Request method
+    output += f"Method: {request.method}\n"
+    
+    # Requested path
     requested_path = f"/{path}" if path else "/"
     output += f"Path: {requested_path}\n"
+    
+    # Query parameters
+    if request.query_string:
+        output += f"Query: {request.query_string.decode('utf-8')}\n"
+    
+    # Timestamp
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    output += f"Timestamp: {timestamp}\n"
+    
+    # Client IP
+    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    output += f"Client IP: {client_ip}\n"
+    
+    # User-Agent
+    user_agent = request.headers.get('User-Agent', 'Unknown')
+    output += f"User-Agent: {user_agent}\n"
 
+    # Hostname
     hostname = socket.gethostname()
     output += f"Hostname: {hostname}\n"
 
+    # Identifier (optional)
     if identifier:
         output += f"Identifier: {identifier}\n"
+    
+    # Request counter
+    output += f"Request Count: {request_counter}\n"
 
     return output, 200, {"Content-Type": "text/plain; charset=utf-8"}
 
