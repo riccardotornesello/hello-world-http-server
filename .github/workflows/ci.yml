@@ -114,11 +114,3 @@ jobs:
           context: .
           push: false
           tags: hello-world-http-server:test
-
-      - name: Build tester Docker image (without push)
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile.tester
-          push: false
-          tags: hello-world-http-server:test-tester
