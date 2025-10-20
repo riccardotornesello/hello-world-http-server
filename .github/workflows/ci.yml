@@ -1,0 +1,120 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+
+jobs:
+  test:
+    name: Run tests
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Run tests
+        run: |
+          pytest test_server.py -v
+
+  lint:
+    name: Run linting
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Run flake8
+        run: |
+          flake8 server.py test_server.py
+
+  format:
+    name: Check formatting
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Check black formatting
+        run: |
+          black --check server.py test_server.py
+
+  docker-build-test:
+    name: Test Docker build
+    if: github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image (without push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: hello-world-http-server:test
+
+      - name: Build tester Docker image (without push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile.tester
+          push: false
+          tags: hello-world-http-server:test-tester
