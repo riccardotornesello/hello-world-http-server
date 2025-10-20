@@ -2,9 +2,13 @@ name: CI
 
 on:
   push:
-    branches:
-      - dev
-      - main
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+# Limit permissions to minimum required for security
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -22,8 +26,8 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-          cache: 'pip'
+          python-version: "3.11"
+          cache: "pip"
 
       - name: Install dependencies
         run: |
@@ -49,8 +53,8 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-          cache: 'pip'
+          python-version: "3.11"
+          cache: "pip"
 
       - name: Install dependencies
         run: |
@@ -76,8 +80,8 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-          cache: 'pip'
+          python-version: "3.11"
+          cache: "pip"
 
       - name: Install dependencies
         run: |
