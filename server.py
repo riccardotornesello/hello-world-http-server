@@ -31,10 +31,18 @@ def catch_all(path):
     identifier = os.environ.get("IDENTIFIER")
     
     # Parse delay with error handling
-    try:
-        delay = int(os.environ.get("DELAY", 0))
-    except ValueError:
-        delay = 0
+    # Query parameter takes precedence over environment variable
+    delay_param = request.args.get('delay')
+    if delay_param is not None:
+        try:
+            delay = int(delay_param)
+        except ValueError:
+            delay = 0
+    else:
+        try:
+            delay = int(os.environ.get("DELAY", 0))
+        except ValueError:
+            delay = 0
     
     # Simulate delay if configured
     if delay > 0:

@@ -110,3 +110,43 @@ def test_invalid_delay_env_var(client, monkeypatch):
     # Should still work, just ignore the invalid delay
     assert response.status_code == 200
     assert b'Hello World!' in response.data
+
+
+def test_delay_query_parameter(client):
+    """Test that delay can be specified via query parameter"""
+    import time
+    start = time.time()
+    response = client.get('/?delay=1')
+    elapsed = time.time() - start
+    
+    assert response.status_code == 200
+    assert b'Hello World!' in response.data
+    # Should have delayed for approximately 1 second
+    assert elapsed >= 0.9  # Allow some tolerance
+
+
+def test_delay_query_parameter_overrides_env(client, monkeypatch):
+    """Test that query parameter delay overrides environment variable"""
+    monkeypatch.setenv('DELAY', '5')
+    import time
+    start = time.time()
+    response = client.get('/?delay=1')
+    elapsed = time.time() - start
+    
+    assert response.status_code == 200
+    assert b'Hello World!' in response.data
+    # Should have delayed for 1 second (from query param), not 5 (from env)
+    assert 0.9 <= elapsed < 2.0
+
+
+def test_delay_query_parameter_invalid(client):
+    """Test that invalid delay query parameter is handled gracefully"""
+    import time
+    start = time.time()
+    response = client.get('/?delay=invalid')
+    elapsed = time.time() - start
+    
+    assert response.status_code == 200
+    assert b'Hello World!' in response.data
+    # Should not delay
+    assert elapsed < 0.5

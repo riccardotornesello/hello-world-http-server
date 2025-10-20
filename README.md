@@ -102,6 +102,15 @@ docker run -p 80:80 -e DELAY=2 riccardotornesello/hello-world-http-server
 
 This will make the server wait 2 seconds before responding to each request.
 
+You can also override the delay on a per-request basis using the `delay` query parameter:
+
+```bash
+curl "http://localhost/?delay=3"
+curl "http://localhost/api/test?delay=1&id=123"
+```
+
+The query parameter takes precedence over the environment variable.
+
 ## 🔧 Supported HTTP Methods
 
 The server accepts all standard HTTP methods:
