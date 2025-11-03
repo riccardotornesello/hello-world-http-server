@@ -11,30 +11,6 @@ app = Flask(__name__)
 request_counter_lock = threading.Lock()
 request_counter = 0
 
-# Cache server IP (computed once at startup)
-_cached_server_ip = None
-
-
-def get_server_ip():
-    """Get the server's local IP address (cached)"""
-    global _cached_server_ip
-    if _cached_server_ip is None:
-        try:
-            # Create a socket to determine the local IP
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            s.connect(("8.8.8.8", 80))
-            local_ip = s.getsockname()[0]
-            s.close()
-            _cached_server_ip = local_ip
-        except Exception:
-            # Fallback to hostname resolution
-            try:
-                _cached_server_ip = socket.gethostbyname(socket.gethostname())
-            except Exception:
-                _cached_server_ip = "unknown"
-    return _cached_server_ip
-
-
 def log_request_info(request_obj, url):
     """Log detailed request information to console"""
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
@@ -47,14 +23,7 @@ def log_request_info(request_obj, url):
     else:
         source_ip = request_obj.remote_addr
 
-    destination_ip = get_server_ip()
-
-    print(
-        f"[REQUEST LOG] Timestamp: {timestamp} | "
-        f"Source IP: {source_ip} | "
-        f"Destination IP: {destination_ip} | "
-        f"URL: {url}"
-    )
+    print(f"[REQUEST LOG] Timestamp: {timestamp} | Source IP: {source_ip} | URL: {url}")
 
 
 @app.route("/health")

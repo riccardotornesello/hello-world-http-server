@@ -167,7 +167,6 @@ def test_request_logging(client, capsys):
     assert "[REQUEST LOG]" in captured.out
     assert "Timestamp:" in captured.out
     assert "Source IP:" in captured.out
-    assert "Destination IP:" in captured.out
     assert "URL: /test?param=value" in captured.out
 
 
