@@ -12,32 +12,42 @@ app = Flask(__name__)
 request_counter_lock = threading.Lock()
 request_counter = 0
 
+# Cache server IP and MAC address (computed once at startup)
+_cached_server_ip = None
+_cached_mac_address = None
+
 
 def get_server_ip():
-    """Get the server's local IP address"""
-    try:
-        # Create a socket to determine the local IP
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        local_ip = s.getsockname()[0]
-        s.close()
-        return local_ip
-    except Exception:
-        # Fallback to hostname resolution
+    """Get the server's local IP address (cached)"""
+    global _cached_server_ip
+    if _cached_server_ip is None:
         try:
-            return socket.gethostbyname(socket.gethostname())
+            # Create a socket to determine the local IP
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            local_ip = s.getsockname()[0]
+            s.close()
+            _cached_server_ip = local_ip
         except Exception:
-            return "unknown"
+            # Fallback to hostname resolution
+            try:
+                _cached_server_ip = socket.gethostbyname(socket.gethostname())
+            except Exception:
+                _cached_server_ip = "unknown"
+    return _cached_server_ip
 
 
 def get_mac_address():
-    """Get the server's MAC address"""
-    try:
-        mac = uuid.getnode()
-        mac_str = ":".join(["{:02x}".format((mac >> elements) & 0xFF) for elements in range(0, 2 * 6, 2)][::-1])
-        return mac_str
-    except Exception:
-        return "unknown"
+    """Get the server's MAC address (cached)"""
+    global _cached_mac_address
+    if _cached_mac_address is None:
+        try:
+            mac = uuid.getnode()
+            mac_str = ":".join(["{:02x}".format((mac >> elements) & 0xFF) for elements in range(0, 8 * 6, 8)][::-1])
+            _cached_mac_address = mac_str
+        except Exception:
+            _cached_mac_address = "unknown"
+    return _cached_mac_address
 
 
 def log_request_info(request_obj, url):
@@ -111,8 +121,7 @@ def catch_all(path):
     # Request method
     output += f"Method: {request.method}\n"
 
-    # Requested path
-    requested_path = f"/{path}" if path else "/"
+    # Requested path (reuse the already constructed path)
     output += f"Path: {requested_path}\n"
 
     # Query parameters
