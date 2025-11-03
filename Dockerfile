@@ -15,4 +15,4 @@ ENV PORT=80
 EXPOSE $PORT
 
 ENV PYTHONUNBUFFERED=1
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT server:app"]
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT --access-logfile - server:app"]
