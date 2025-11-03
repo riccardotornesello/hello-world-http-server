@@ -2,7 +2,6 @@ import os
 import socket
 import time
 import threading
-import uuid
 from datetime import datetime, timezone
 from flask import Flask, request
 
@@ -12,9 +11,8 @@ app = Flask(__name__)
 request_counter_lock = threading.Lock()
 request_counter = 0
 
-# Cache server IP and MAC address (computed once at startup)
+# Cache server IP (computed once at startup)
 _cached_server_ip = None
-_cached_mac_address = None
 
 
 def get_server_ip():
@@ -37,20 +35,6 @@ def get_server_ip():
     return _cached_server_ip
 
 
-def get_mac_address():
-    """Get the server's MAC address (cached)"""
-    global _cached_mac_address
-    if _cached_mac_address is None:
-        try:
-            mac = uuid.getnode()
-            # Extract MAC address bytes from most significant to least significant
-            mac_str = ":".join(["{:02x}".format((mac >> elements) & 0xFF) for elements in range(40, -1, -8)])
-            _cached_mac_address = mac_str
-        except Exception:
-            _cached_mac_address = "unknown"
-    return _cached_mac_address
-
-
 def log_request_info(request_obj, url):
     """Log detailed request information to console"""
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
@@ -64,15 +48,11 @@ def log_request_info(request_obj, url):
         source_ip = request_obj.remote_addr
 
     destination_ip = get_server_ip()
-    source_ethernet = "N/A"  # Not available at HTTP layer
-    destination_ethernet = get_mac_address()
 
     print(
         f"[REQUEST LOG] Timestamp: {timestamp} | "
         f"Source IP: {source_ip} | "
         f"Destination IP: {destination_ip} | "
-        f"Source Ethernet: {source_ethernet} | "
-        f"Destination Ethernet: {destination_ethernet} | "
         f"URL: {url}"
     )
 
