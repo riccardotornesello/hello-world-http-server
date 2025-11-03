@@ -152,3 +152,36 @@ def test_delay_query_parameter_invalid(client):
     assert b"Hello World!" in response.data
     # Should not delay
     assert elapsed < 0.5
+
+
+def test_request_logging(client, capsys):
+    """Test that request logging outputs to console"""
+    # Make a request
+    response = client.get("/test?param=value")
+    assert response.status_code == 200
+
+    # Capture console output
+    captured = capsys.readouterr()
+
+    # Verify that logging output contains required information
+    assert "[REQUEST LOG]" in captured.out
+    assert "Timestamp:" in captured.out
+    assert "Source IP:" in captured.out
+    assert "Destination IP:" in captured.out
+    assert "Source Ethernet:" in captured.out
+    assert "Destination Ethernet:" in captured.out
+    assert "URL: /test?param=value" in captured.out
+
+
+def test_health_endpoint_logging(client, capsys):
+    """Test that health endpoint also logs requests"""
+    # Make a request to health endpoint
+    response = client.get("/health")
+    assert response.status_code == 200
+
+    # Capture console output
+    captured = capsys.readouterr()
+
+    # Verify that logging output is present
+    assert "[REQUEST LOG]" in captured.out
+    assert "URL: /health" in captured.out

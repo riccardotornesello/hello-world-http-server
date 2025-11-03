@@ -2,6 +2,7 @@ import os
 import socket
 import time
 import threading
+import uuid
 from datetime import datetime, timezone
 from flask import Flask, request
 
@@ -12,9 +13,56 @@ request_counter_lock = threading.Lock()
 request_counter = 0
 
 
+def get_server_ip():
+    """Get the server's local IP address"""
+    try:
+        # Create a socket to determine the local IP
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        local_ip = s.getsockname()[0]
+        s.close()
+        return local_ip
+    except Exception:
+        # Fallback to hostname resolution
+        try:
+            return socket.gethostbyname(socket.gethostname())
+        except Exception:
+            return "unknown"
+
+
+def get_mac_address():
+    """Get the server's MAC address"""
+    try:
+        mac = uuid.getnode()
+        mac_str = ":".join(["{:02x}".format((mac >> elements) & 0xFF) for elements in range(0, 2 * 6, 2)][::-1])
+        return mac_str
+    except Exception:
+        return "unknown"
+
+
+def log_request_info(request_obj, url):
+    """Log detailed request information to console"""
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    source_ip = request_obj.headers.get("X-Forwarded-For", request_obj.remote_addr)
+    destination_ip = get_server_ip()
+    source_ethernet = "N/A"  # Not available at HTTP layer
+    destination_ethernet = get_mac_address()
+
+    print(
+        f"[REQUEST LOG] Timestamp: {timestamp} | "
+        f"Source IP: {source_ip} | "
+        f"Destination IP: {destination_ip} | "
+        f"Source Ethernet: {source_ethernet} | "
+        f"Destination Ethernet: {destination_ethernet} | "
+        f"URL: {url}"
+    )
+
+
 @app.route("/health")
 def health_check():
     """Health check endpoint for monitoring"""
+    # Log request information to console
+    log_request_info(request, "/health")
     return "OK\n", 200, {"Content-Type": "text/plain; charset=utf-8"}
 
 
@@ -27,6 +75,16 @@ def catch_all(path):
     with request_counter_lock:
         request_counter += 1
         current_count = request_counter
+
+    # Construct full URL
+    requested_path = f"/{path}" if path else "/"
+    if request.query_string:
+        full_url = f"{requested_path}?{request.query_string.decode('utf-8')}"
+    else:
+        full_url = requested_path
+
+    # Log request information to console
+    log_request_info(request, full_url)
 
     identifier = os.environ.get("IDENTIFIER")
 
