@@ -185,3 +185,19 @@ def test_health_endpoint_logging(client, capsys):
     # Verify that logging output is present
     assert "[REQUEST LOG]" in captured.out
     assert "URL: /health" in captured.out
+
+
+def test_x_forwarded_for_logging(client, capsys):
+    """Test that X-Forwarded-For header is properly parsed in logging"""
+    # Make a request with X-Forwarded-For header containing multiple IPs
+    response = client.get("/test", headers={"X-Forwarded-For": "203.0.113.1, 198.51.100.1, 192.0.2.1"})
+    assert response.status_code == 200
+
+    # Capture console output
+    captured = capsys.readouterr()
+
+    # Verify that only the first IP (client IP) is logged
+    assert "[REQUEST LOG]" in captured.out
+    assert "Source IP: 203.0.113.1" in captured.out
+    # Should not contain the proxy IPs
+    assert "198.51.100.1" not in captured.out

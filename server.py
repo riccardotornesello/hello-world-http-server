@@ -43,7 +43,8 @@ def get_mac_address():
     if _cached_mac_address is None:
         try:
             mac = uuid.getnode()
-            mac_str = ":".join(["{:02x}".format((mac >> elements) & 0xFF) for elements in range(0, 8 * 6, 8)][::-1])
+            # Extract MAC address bytes from most significant to least significant
+            mac_str = ":".join(["{:02x}".format((mac >> elements) & 0xFF) for elements in range(40, -1, -8)])
             _cached_mac_address = mac_str
         except Exception:
             _cached_mac_address = "unknown"
@@ -53,7 +54,15 @@ def get_mac_address():
 def log_request_info(request_obj, url):
     """Log detailed request information to console"""
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    source_ip = request_obj.headers.get("X-Forwarded-For", request_obj.remote_addr)
+
+    # Get source IP: use X-Forwarded-For if present (take first IP), otherwise use remote_addr
+    forwarded_for = request_obj.headers.get("X-Forwarded-For")
+    if forwarded_for:
+        # X-Forwarded-For can contain multiple IPs, take the first (client IP)
+        source_ip = forwarded_for.split(",")[0].strip()
+    else:
+        source_ip = request_obj.remote_addr
+
     destination_ip = get_server_ip()
     source_ethernet = "N/A"  # Not available at HTTP layer
     destination_ethernet = get_mac_address()
